@@ -75,7 +75,7 @@ let html = `<!DOCTYPE html>
     <span class="badge">TypeScript</span>
     <span class="badge">React / Next.js / Vanilla</span>
   </div>
-  <div class="install">npm install @appcat/bannergen</div>
+  <div class="install">npm install github:appcat-io/bannergen</div>
 </div>`;
 
 // Banner Gallery
