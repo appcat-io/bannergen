@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 
 const browserJS = readFileSync("dist/bannergen.browser.global.js", "utf-8");
 
-const names = ["Matthew Peters", "maia", "hello world", "bannergen", "soundlink", "aurora", "delta", "echo"];
+const names = ["hello world", "bannergen", "soundlink", "aurora", "delta", "echo"];
 const bannerVariants = ["gradient", "geometric", "topographic", "aurora"];
 const avatarVariants = ["pixelGrid", "geometric", "rings"];
 const albumCoverVariants = ["fluidPaint", "tessellation", "noiseField", "nebula"];
@@ -141,7 +141,7 @@ let html = `<!DOCTYPE html>
 <div class="tryit">
   <h2>Try It</h2>
   <div class="tryit-controls">
-    <input type="text" id="tryit-name" placeholder="Type a name..." value="maia" />
+    <input type="text" id="tryit-name" placeholder="Type a name..." value="hello world" />
     <select id="tryit-banner-variant">
       <option value="auto">Banner: auto</option>
       <option value="gradient">gradient</option>
@@ -281,11 +281,11 @@ html += `<div class="section"><h2>Usage</h2><div class="code-section">
 } from "@appcat/bannergen";
 
 // Banner
-&lt;Bannergen name="maia" /&gt;
+&lt;Bannergen name="soundlink" /&gt;
 &lt;Bannergen name="bob" variant="aurora" /&gt;
 
 // Avatar
-&lt;Identicon name="maia" size={64} /&gt;
+&lt;Identicon name="soundlink" size={64} /&gt;
 &lt;Identicon name="bob" rounded /&gt;
 
 // Album Cover
@@ -300,9 +300,9 @@ html += `<div class="section"><h2>Usage</h2><div class="code-section">
   generateAlbumCoverSVG,
 } from "@appcat/bannergen";
 
-const banner = generateBannerSVG({ name: "maia" });
+const banner = generateBannerSVG({ name: "soundlink" });
 const avatar = generateAvatarSVG({
-  name: "maia",
+  name: "soundlink",
   size: 128,
   rounded: true,
 });
@@ -339,11 +339,11 @@ export const { GET } = toAlbumCoverHandler();</pre>
   generateAlbumCoverDataURI,
 } from "@appcat/bannergen";
 
-const src = generateBannerDataURI({ name: "maia" });
+const src = generateBannerDataURI({ name: "soundlink" });
 // &lt;img src={src} /&gt;
 
 const avatarSrc = generateAvatarDataURI({
-  name: "maia",
+  name: "soundlink",
   rounded: true,
 });
 
