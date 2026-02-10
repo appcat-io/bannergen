@@ -80,7 +80,7 @@ let html = `<!DOCTYPE html>
   @media (max-width: 700px) { .code-section { grid-template-columns: 1fr; } }
   .code-block { background: #141414; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
   .code-block .code-title { padding: 0.5rem 0.75rem; background: #1a1a1a; font-size: 0.75rem; color: #666; border-bottom: 1px solid #222; font-family: monospace; }
-  .code-block pre { padding: 0.75rem; font-size: 0.8rem; font-family: "SF Mono", "Fira Code", monospace; overflow-x: auto; color: #ccc; line-height: 1.5; }
+  .code-block pre { padding: 0.75rem; font-size: 0.75rem; font-family: "SF Mono", "Fira Code", monospace; overflow-x: auto; color: #ccc; line-height: 1.5; }
 
   /* Props Table */
   .props-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -218,7 +218,10 @@ html += `</div>`;
 html += `<div class="section"><h2>Usage</h2><div class="code-section">
 <div class="code-block">
   <div class="code-title">React Component</div>
-  <pre>import { Bannergen, Identicon } from "@appcat/bannergen";
+  <pre>import {
+  Bannergen,
+  Identicon,
+} from "@appcat/bannergen";
 
 // Banner
 &lt;Bannergen name="maia" /&gt;
@@ -245,11 +248,15 @@ const avatar = generateAvatarSVG({
 <div class="code-block">
   <div class="code-title">Next.js API Route</div>
   <pre>// app/api/banner/route.ts
-import { toBannergenHandler } from "@appcat/bannergen/next";
+import {
+  toBannergenHandler,
+} from "@appcat/bannergen/next";
 export const { GET } = toBannergenHandler();
 
 // app/api/avatar/route.ts
-import { toIdenticonHandler } from "@appcat/bannergen/next";
+import {
+  toIdenticonHandler,
+} from "@appcat/bannergen/next";
 export const { GET } = toIdenticonHandler();</pre>
 </div>
 <div class="code-block">
