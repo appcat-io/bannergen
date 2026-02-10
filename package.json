@@ -1,0 +1,80 @@
+{
+  "name": "@appcat/bannergen",
+  "version": "0.1.0",
+  "description": "Deterministic profile banners and identicon avatars from any string. Zero dependencies. Works with React, Next.js, Vite, Remix.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./next": {
+      "types": "./dist/next.d.ts",
+      "import": "./dist/next.mjs",
+      "require": "./dist/next.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "test": "tsx --test src/__tests__/*.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "bannergen",
+    "banner",
+    "profile-banner",
+    "header-image",
+    "deterministic",
+    "hash",
+    "avatar",
+    "identicon",
+    "profile-picture",
+    "og-image",
+    "react",
+    "typescript",
+    "svg",
+    "generative-art",
+    "gradient",
+    "geometric",
+    "topographic",
+    "aurora"
+  ],
+  "author": "appcat-io",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appcat-io/bannergen.git"
+  },
+  "homepage": "https://appcat-io.github.io/bannergen",
+  "bugs": {
+    "url": "https://github.com/appcat-io/bannergen/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "react": "^18.2.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.3.0"
+  }
+}
