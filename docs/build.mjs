@@ -2,7 +2,7 @@ import { generateBannerSVG } from "../dist/index.mjs";
 import { generateAvatarSVG } from "../dist/index.mjs";
 import { writeFileSync, mkdirSync } from "fs";
 
-const names = ["Matthew Peters", "alice", "hello world", "bannergen", "soundlink", "aurora", "delta", "echo"];
+const names = ["Matthew Peters", "maia", "hello world", "bannergen", "soundlink", "aurora", "delta", "echo"];
 const bannerVariants = ["gradient", "geometric", "topographic", "aurora"];
 const avatarVariants = ["pixelGrid", "geometric", "rings"];
 
@@ -117,11 +117,11 @@ html += `<div class="section"><h2>Usage</h2><div class="code-section">
   <pre>import { Bannergen, Identicon } from "@appcat/bannergen";
 
 // Banner
-&lt;Bannergen name="alice" /&gt;
+&lt;Bannergen name="maia" /&gt;
 &lt;Bannergen name="bob" variant="aurora" /&gt;
 
 // Avatar
-&lt;Identicon name="alice" size={64} /&gt;
+&lt;Identicon name="maia" size={64} /&gt;
 &lt;Identicon name="bob" rounded /&gt;</pre>
 </div>
 <div class="code-block">
@@ -131,9 +131,9 @@ html += `<div class="section"><h2>Usage</h2><div class="code-section">
   generateAvatarSVG
 } from "@appcat/bannergen";
 
-const banner = generateBannerSVG({ name: "alice" });
+const banner = generateBannerSVG({ name: "maia" });
 const avatar = generateAvatarSVG({
-  name: "alice",
+  name: "maia",
   size: 128,
   rounded: true,
 });</pre>
@@ -155,11 +155,11 @@ export const { GET } = toIdenticonHandler();</pre>
   generateAvatarDataURI
 } from "@appcat/bannergen";
 
-const src = generateBannerDataURI({ name: "alice" });
+const src = generateBannerDataURI({ name: "maia" });
 // &lt;img src={src} /&gt;
 
 const avatarSrc = generateAvatarDataURI({
-  name: "alice",
+  name: "maia",
   rounded: true,
 });</pre>
 </div>
