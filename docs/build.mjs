@@ -88,9 +88,10 @@ let html = `<!DOCTYPE html>
   .props-table td { padding: 0.5rem; border-bottom: 1px solid #1a1a1a; }
   .props-table code { background: #1a1a1a; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.8rem; color: #4ade80; }
 
-  .footer { text-align: center; padding: 2rem 0; color: #555; font-size: 0.85rem; border-top: 1px solid #1a1a1a; margin-top: 2rem; }
-  .footer a { color: #888; text-decoration: underline; transition: color 0.2s; }
-  .footer a:hover { color: #4ade80; }
+  .footer { text-align: center; padding: 2rem 0; color: #555; font-size: 0.85rem; border-top: 1px solid #1a1a1a; margin-top: 2rem; line-height: 1.8; }
+  .footer a { color: #888; text-decoration: none; transition: color 0.2s; }
+  .footer a:hover { color: #4ade80; text-decoration: underline; }
+  .footer .footer-sep { color: #333; margin: 0 0.4rem; }
 
   /* Install focus/active */
   .install:focus { outline: 2px solid #4ade80; outline-offset: 2px; }
@@ -301,7 +302,10 @@ html += `<div class="section"><h2>API Reference</h2>
 
 </div>`;
 
-html += `<div class="footer">@appcat/bannergen &mdash; Created by Matthew Peters with Claude Opus 4.6 &mdash; MIT License &mdash; <a href="https://github.com/appcat-io/bannergen">GitHub</a></div>
+html += `<div class="footer">
+  <div>Built by <a href="https://github.com/appcat-io">Appcat</a> <span class="footer-sep">&middot;</span> MIT License <span class="footer-sep">&middot;</span> <a href="https://github.com/appcat-io/bannergen">GitHub</a></div>
+  <div>Created by Matthew Peters with Claude Opus 4.6</div>
+</div>
 </div></body></html>`;
 
 mkdirSync("docs/dist", { recursive: true });
