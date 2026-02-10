@@ -1,5 +1,6 @@
 import { generateBannerSVG, type BannerVariant } from "./generator";
 import { generateAvatarSVG, type AvatarVariant } from "./avatar";
+import { generateAlbumCoverSVG, type AlbumCoverVariant } from "./albumcover";
 
 /**
  * Creates a Next.js App Router route handler for generating banner images.
@@ -75,6 +76,47 @@ export function toIdenticonHandler(defaults?: {
     const colors = colorsParam ? colorsParam.split(",").map((c) => (c.startsWith("#") ? c : `#${c}`)) : undefined;
 
     const svg = generateAvatarSVG({ name, size, variant, rounded, colors });
+
+    return new Response(svg, {
+      headers: {
+        "Content-Type": "image/svg+xml",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  };
+
+  return { GET };
+}
+
+/**
+ * Creates a Next.js App Router route handler for generating album cover images.
+ *
+ * @example
+ * ```ts
+ * // app/api/albumcover/route.ts
+ * import { toAlbumCoverHandler } from "@appcat/bannergen/next";
+ * export const { GET } = toAlbumCoverHandler();
+ * ```
+ *
+ * Usage:
+ * ```html
+ * <img src="/api/albumcover?name=alice" />
+ * <img src="/api/albumcover?name=bob&variant=nebula&size=512" />
+ * ```
+ */
+export function toAlbumCoverHandler(defaults?: {
+  size?: number;
+  variant?: AlbumCoverVariant;
+}) {
+  const GET = async (request: Request) => {
+    const { searchParams } = new URL(request.url);
+    const name = searchParams.get("name") || "default";
+    const size = parseInt(searchParams.get("size") || String(defaults?.size || 512));
+    const variant = (searchParams.get("variant") as AlbumCoverVariant) || defaults?.variant || "auto";
+    const colorsParam = searchParams.get("colors");
+    const colors = colorsParam ? colorsParam.split(",").map((c) => (c.startsWith("#") ? c : `#${c}`)) : undefined;
+
+    const svg = generateAlbumCoverSVG({ name, size, variant, colors });
 
     return new Response(svg, {
       headers: {
