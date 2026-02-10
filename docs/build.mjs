@@ -28,7 +28,8 @@ let html = `<!DOCTYPE html>
   .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #1a1a1a; border: 1px solid #333; color: #aaa; }
 
   /* Install */
-  .install { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 0.75rem 1.25rem; display: inline-block; font-family: "SF Mono", "Fira Code", monospace; font-size: 0.9rem; color: #4ade80; margin-bottom: 2rem; }
+  .install { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 0.75rem 1.25rem; display: inline-block; font-family: "SF Mono", "Fira Code", monospace; font-size: 0.9rem; color: #4ade80; margin-bottom: 0.5rem; }
+  .pre-release { font-size: 0.75rem; color: #666; margin-bottom: 2rem; }
 
   /* Try It */
   .tryit { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; margin-bottom: 3rem; }
@@ -102,6 +103,7 @@ let html = `<!DOCTYPE html>
     <span class="badge">React / Next.js / Vanilla</span>
   </div>
   <div class="install">npm install github:appcat-io/bannergen</div>
+  <div class="pre-release">Pre-release &mdash; not yet published to npm</div>
 </div>
 
 <div class="tryit">
@@ -275,7 +277,7 @@ html += `<div class="section"><h2>API Reference</h2>
 
 </div>`;
 
-html += `<div class="footer">@appcat/bannergen &mdash; MIT License &mdash; <a href="https://github.com/appcat-io/bannergen" style="color:#666">GitHub</a></div>
+html += `<div class="footer">@appcat/bannergen &mdash; Created by Matthew Peters with Claude Opus 4.6 &mdash; MIT License &mdash; <a href="https://github.com/appcat-io/bannergen" style="color:#666">GitHub</a></div>
 </div></body></html>`;
 
 mkdirSync("docs/dist", { recursive: true });
