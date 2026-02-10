@@ -1,11 +1,15 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
+
+/** Round a number to 1 decimal place */
+const rd = (n: number) => +n.toFixed(1);
 
 export function generateTessellation(
   h: HashParams,
-  palette: BannerPalette,
-  size: number
+  palette: Palette,
+  size: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];
@@ -17,7 +21,7 @@ export function generateTessellation(
 
   const colors = [palette.primary, palette.secondary, palette.accent, palette.highlight];
   const separatorColor = hslToString(palette.background, 0.9);
-  const separatorWidth = h.float(1.5, 3.5);
+  const separatorWidth = rd(h.float(1.5, 3.5));
   const maxDepth = h.int(2, 4);
 
   interface Cell {
@@ -86,6 +90,10 @@ export function generateTessellation(
 
   // Draw each cell
   for (const cell of cells) {
+    const cx = rd(cell.x);
+    const cy = rd(cell.y);
+    const cw = rd(cell.w);
+    const ch = rd(cell.h);
     const color = h.pick(colors);
     const opacity = h.float(0.4, 0.85);
     const useDiagonal = h.rand() > 0.7;
@@ -94,38 +102,40 @@ export function generateTessellation(
       // Diagonal cut — two triangles
       const color2 = h.pick(colors);
       const opacity2 = h.float(0.4, 0.85);
-      const cutDir = h.rand() > 0.5; // top-left to bottom-right vs top-right to bottom-left
+      const cutDir = h.rand() > 0.5;
+      const cxw = rd(cell.x + cell.w);
+      const cyh = rd(cell.y + cell.h);
 
       if (cutDir) {
         elements.push(
-          `<polygon points="${cell.x},${cell.y} ${cell.x + cell.w},${cell.y} ${cell.x},${cell.y + cell.h}" fill="${hslToString(color, opacity)}" />`
+          `<polygon points="${cx},${cy} ${cxw},${cy} ${cx},${cyh}" fill="${hslToString(color, opacity)}" />`
         );
         elements.push(
-          `<polygon points="${cell.x + cell.w},${cell.y} ${cell.x + cell.w},${cell.y + cell.h} ${cell.x},${cell.y + cell.h}" fill="${hslToString(color2, opacity2)}" />`
+          `<polygon points="${cxw},${cy} ${cxw},${cyh} ${cx},${cyh}" fill="${hslToString(color2, opacity2)}" />`
         );
       } else {
         elements.push(
-          `<polygon points="${cell.x},${cell.y} ${cell.x + cell.w},${cell.y} ${cell.x + cell.w},${cell.y + cell.h}" fill="${hslToString(color, opacity)}" />`
+          `<polygon points="${cx},${cy} ${cxw},${cy} ${cxw},${cyh}" fill="${hslToString(color, opacity)}" />`
         );
         elements.push(
-          `<polygon points="${cell.x},${cell.y} ${cell.x},${cell.y + cell.h} ${cell.x + cell.w},${cell.y + cell.h}" fill="${hslToString(color2, opacity2)}" />`
+          `<polygon points="${cx},${cy} ${cx},${cyh} ${cxw},${cyh}" fill="${hslToString(color2, opacity2)}" />`
         );
       }
     } else {
       // Solid rectangle
       elements.push(
-        `<rect x="${cell.x}" y="${cell.y}" width="${cell.w}" height="${cell.h}" fill="${hslToString(color, opacity)}" />`
+        `<rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" fill="${hslToString(color, opacity)}" />`
       );
 
       // Optional circle/arc inset for larger cells
       if (h.rand() > 0.8 && cell.w > size * 0.1 && cell.h > size * 0.1) {
         const insetColor = h.pick(colors);
         const insetOpacity = h.float(0.15, 0.5);
-        const r = Math.min(cell.w, cell.h) * h.float(0.25, 0.45);
-        const icx = cell.x + cell.w / 2;
-        const icy = cell.y + cell.h / 2;
+        const r = rd(Math.min(cell.w, cell.h) * h.float(0.25, 0.45));
+        const icx = rd(cell.x + cell.w / 2);
+        const icy = rd(cell.y + cell.h / 2);
         elements.push(
-          `<circle cx="${icx}" cy="${icy}" r="${r}" fill="none" stroke="${hslToString(insetColor, insetOpacity)}" stroke-width="${h.float(1, 3)}" />`
+          `<circle cx="${icx}" cy="${icy}" r="${r}" fill="none" stroke="${hslToString(insetColor, insetOpacity)}" stroke-width="${rd(h.float(1, 3))}" />`
         );
       }
     }
@@ -134,19 +144,19 @@ export function generateTessellation(
   // Separator grid lines over all cell boundaries
   for (const cell of cells) {
     elements.push(
-      `<rect x="${cell.x}" y="${cell.y}" width="${cell.w}" height="${cell.h}" fill="none" stroke="${separatorColor}" stroke-width="${separatorWidth}" />`
+      `<rect x="${rd(cell.x)}" y="${rd(cell.y)}" width="${rd(cell.w)}" height="${rd(cell.h)}" fill="none" stroke="${separatorColor}" stroke-width="${separatorWidth}" />`
     );
   }
 
   // Grain overlay
   defs.push(`
-    <filter id="ts-grain">
+    <filter id="${prefix}ts-grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
     </filter>
   `);
   elements.push(
-    `<rect width="${size}" height="${size}" filter="url(#ts-grain)" opacity="0.03" />`
+    `<rect width="${size}" height="${size}" filter="url(#${prefix}ts-grain)" opacity="0.03" />`
   );
 
   return `<defs>${defs.join("")}</defs>${elements.join("")}`;

@@ -1,5 +1,5 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
 
 /**
@@ -8,8 +8,9 @@ import { hslToString } from "../utils/colors";
  */
 export function generatePixelGrid(
   h: HashParams,
-  palette: BannerPalette,
-  size: number
+  palette: Palette,
+  size: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];

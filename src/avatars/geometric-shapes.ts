@@ -1,5 +1,5 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
 
 /**
@@ -8,8 +8,9 @@ import { hslToString } from "../utils/colors";
  */
 export function generateGeometricAvatar(
   h: HashParams,
-  palette: BannerPalette,
-  size: number
+  palette: Palette,
+  size: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];
@@ -20,12 +21,12 @@ export function generateGeometricAvatar(
   // Background gradient
   const bgAngle = h.float(0, 360);
   defs.push(`
-    <linearGradient id="abg" gradientTransform="rotate(${bgAngle})">
+    <linearGradient id="${prefix}abg" gradientTransform="rotate(${bgAngle})">
       <stop offset="0%" stop-color="${hslToString(palette.background)}" />
       <stop offset="100%" stop-color="${hslToString({ ...palette.background, l: palette.background.l + 8 })}" />
     </linearGradient>
   `);
-  elements.push(`<rect width="${size}" height="${size}" fill="url(#abg)" />`);
+  elements.push(`<rect width="${size}" height="${size}" fill="url(#${prefix}abg)" />`);
 
   const colors = [palette.primary, palette.secondary, palette.accent, palette.highlight];
   const shapeCount = h.int(3, 7);

@@ -2,6 +2,19 @@ import { generateBannerSVG, type BannerVariant } from "./generator";
 import { generateAvatarSVG, type AvatarVariant } from "./avatar";
 import { generateAlbumCoverSVG, type AlbumCoverVariant } from "./albumcover";
 
+/** Parse and clamp a dimension parameter to a safe range */
+function parseDimension(value: string | null, fallback: number): number {
+  const parsed = value ? parseInt(value, 10) : NaN;
+  return Number.isNaN(parsed) ? fallback : Math.max(1, Math.min(5000, parsed));
+}
+
+/** Parse a comma-separated colors query param into a hex array */
+function parseColors(param: string | null): string[] | undefined {
+  return param
+    ? param.split(",").map((c) => (c.startsWith("#") ? c : `#${c}`))
+    : undefined;
+}
+
 /**
  * Creates a Next.js App Router route handler for generating banner images.
  *
@@ -26,11 +39,10 @@ export function toBannergenHandler(defaults?: {
   const GET = async (request: Request) => {
     const { searchParams } = new URL(request.url);
     const name = searchParams.get("name") || "default";
-    const width = parseInt(searchParams.get("width") || String(defaults?.width || 1500));
-    const height = parseInt(searchParams.get("height") || String(defaults?.height || 500));
+    const width = parseDimension(searchParams.get("width"), defaults?.width || 1500);
+    const height = parseDimension(searchParams.get("height"), defaults?.height || 500);
     const variant = (searchParams.get("variant") as BannerVariant) || defaults?.variant || "auto";
-    const colorsParam = searchParams.get("colors");
-    const colors = colorsParam ? colorsParam.split(",").map((c) => (c.startsWith("#") ? c : `#${c}`)) : undefined;
+    const colors = parseColors(searchParams.get("colors"));
 
     const svg = generateBannerSVG({ name, width, height, variant, colors });
 
@@ -69,11 +81,10 @@ export function toIdenticonHandler(defaults?: {
   const GET = async (request: Request) => {
     const { searchParams } = new URL(request.url);
     const name = searchParams.get("name") || "default";
-    const size = parseInt(searchParams.get("size") || String(defaults?.size || 128));
+    const size = parseDimension(searchParams.get("size"), defaults?.size || 128);
     const variant = (searchParams.get("variant") as AvatarVariant) || defaults?.variant || "auto";
     const rounded = searchParams.get("rounded") === "true" || defaults?.rounded || false;
-    const colorsParam = searchParams.get("colors");
-    const colors = colorsParam ? colorsParam.split(",").map((c) => (c.startsWith("#") ? c : `#${c}`)) : undefined;
+    const colors = parseColors(searchParams.get("colors"));
 
     const svg = generateAvatarSVG({ name, size, variant, rounded, colors });
 
@@ -111,10 +122,9 @@ export function toAlbumCoverHandler(defaults?: {
   const GET = async (request: Request) => {
     const { searchParams } = new URL(request.url);
     const name = searchParams.get("name") || "default";
-    const size = parseInt(searchParams.get("size") || String(defaults?.size || 512));
+    const size = parseDimension(searchParams.get("size"), defaults?.size || 512);
     const variant = (searchParams.get("variant") as AlbumCoverVariant) || defaults?.variant || "auto";
-    const colorsParam = searchParams.get("colors");
-    const colors = colorsParam ? colorsParam.split(",").map((c) => (c.startsWith("#") ? c : `#${c}`)) : undefined;
+    const colors = parseColors(searchParams.get("colors"));
 
     const svg = generateAlbumCoverSVG({ name, size, variant, colors });
 

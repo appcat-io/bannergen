@@ -1,11 +1,12 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
 
 export function generateFluidPaint(
   h: HashParams,
-  palette: BannerPalette,
-  size: number
+  palette: Palette,
+  size: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];
@@ -13,18 +14,18 @@ export function generateFluidPaint(
   // Background gradient
   const bgAngle = h.float(0, 360);
   defs.push(`
-    <linearGradient id="fp-bg" gradientTransform="rotate(${bgAngle})">
+    <linearGradient id="${prefix}fp-bg" gradientTransform="rotate(${bgAngle})">
       <stop offset="0%" stop-color="${hslToString(palette.background)}" />
       <stop offset="100%" stop-color="${hslToString({ ...palette.background, l: palette.background.l + 6, h: palette.background.h + 20 })}" />
     </linearGradient>
   `);
-  elements.push(`<rect width="${size}" height="${size}" fill="url(#fp-bg)" />`);
+  elements.push(`<rect width="${size}" height="${size}" fill="url(#${prefix}fp-bg)" />`);
 
   // Displacement filter for organic distortion on some blobs
   const turbFreq = h.float(0.008, 0.025);
   const turbScale = h.float(20, 60);
   defs.push(`
-    <filter id="fp-distort">
+    <filter id="${prefix}fp-distort">
       <feTurbulence type="turbulence" baseFrequency="${turbFreq}" numOctaves="3" seed="${h.int(0, 999)}" result="turb" />
       <feDisplacementMap in="SourceGraphic" in2="turb" scale="${turbScale}" xChannelSelector="R" yChannelSelector="G" />
     </filter>
@@ -72,16 +73,16 @@ export function generateFluidPaint(
 
     // Radial gradient for this blob
     defs.push(`
-      <radialGradient id="fp-blob${i}" cx="50%" cy="50%" r="50%">
+      <radialGradient id="${prefix}fp-blob${i}" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="${hslToString({ ...color, l: Math.min(85, color.l + 10) })}" stop-opacity="${opacity}" />
         <stop offset="60%" stop-color="${hslToString(color)}" stop-opacity="${opacity * 0.7}" />
         <stop offset="100%" stop-color="${hslToString(color)}" stop-opacity="0" />
       </radialGradient>
     `);
 
-    const filterAttr = useDistortion ? ' filter="url(#fp-distort)"' : "";
+    const filterAttr = useDistortion ? ` filter="url(#${prefix}fp-distort)"` : "";
     elements.push(
-      `<path d="${d}" fill="url(#fp-blob${i})"${filterAttr} />`
+      `<path d="${d}" fill="url(#${prefix}fp-blob${i})"${filterAttr} />`
     );
   }
 
@@ -116,13 +117,13 @@ export function generateFluidPaint(
 
   // Grain overlay
   defs.push(`
-    <filter id="fp-grain">
+    <filter id="${prefix}fp-grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
     </filter>
   `);
   elements.push(
-    `<rect width="${size}" height="${size}" filter="url(#fp-grain)" opacity="0.04" />`
+    `<rect width="${size}" height="${size}" filter="url(#${prefix}fp-grain)" opacity="0.04" />`
   );
 
   return `<defs>${defs.join("")}</defs>${elements.join("")}`;

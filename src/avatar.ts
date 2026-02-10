@@ -46,12 +46,13 @@ export function generateAvatarSVG(options: AvatarOptions): string {
   const patternFn = PATTERN_FNS[resolvedVariant];
   // Re-hash so the pattern gets fresh randomness after the palette used some
   const patternHash = hashString(name + ":" + resolvedVariant);
-  const inner = patternFn(patternHash, palette, size);
+  const prefix = patternHash.seeds[0].toString(36).slice(0, 4);
+  const inner = patternFn(patternHash, palette, size, prefix);
 
   const clipDefs = rounded
-    ? `<clipPath id="avatar-clip"><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" /></clipPath>`
+    ? `<clipPath id="${prefix}avatar-clip"><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" /></clipPath>`
     : "";
-  const clipOpen = rounded ? `<g clip-path="url(#avatar-clip)">` : "";
+  const clipOpen = rounded ? `<g clip-path="url(#${prefix}avatar-clip)">` : "";
   const clipClose = rounded ? `</g>` : "";
 
   return [
