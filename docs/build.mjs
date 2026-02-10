@@ -28,7 +28,9 @@ let html = `<!DOCTYPE html>
   .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #1a1a1a; border: 1px solid #333; color: #aaa; }
 
   /* Install */
-  .install { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 0.75rem 1.25rem; display: inline-block; font-family: "SF Mono", "Fira Code", monospace; font-size: 0.9rem; color: #4ade80; margin-bottom: 0.5rem; }
+  .install { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 0.75rem 1.25rem; display: inline-flex; align-items: center; gap: 0.75rem; font-family: "SF Mono", "Fira Code", monospace; font-size: 0.9rem; color: #4ade80; margin-bottom: 0.5rem; text-decoration: none; transition: border-color 0.2s; }
+  .install:hover { border-color: #4ade80; }
+  .install .gh-icon { width: 1.1em; height: 1.1em; fill: #888; flex-shrink: 0; }
   .pre-release { font-size: 0.75rem; color: #666; margin-bottom: 2rem; }
 
   /* Try It */
@@ -86,7 +88,22 @@ let html = `<!DOCTYPE html>
   .props-table td { padding: 0.5rem; border-bottom: 1px solid #1a1a1a; }
   .props-table code { background: #1a1a1a; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.8rem; color: #4ade80; }
 
-  .footer { text-align: center; padding: 2rem 0; color: #444; font-size: 0.85rem; border-top: 1px solid #1a1a1a; margin-top: 2rem; }
+  .footer { text-align: center; padding: 2rem 0; color: #555; font-size: 0.85rem; border-top: 1px solid #1a1a1a; margin-top: 2rem; }
+  .footer a { color: #888; text-decoration: underline; transition: color 0.2s; }
+  .footer a:hover { color: #4ade80; }
+
+  /* Install focus/active */
+  .install:focus { outline: 2px solid #4ade80; outline-offset: 2px; }
+
+  /* Table overflow on mobile */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Mobile responsive */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.75rem; }
+    .hero p { font-size: 1rem; }
+    .install { font-size: 0.8rem; padding: 0.6rem 1rem; }
+  }
 </style>
 </head><body>
 <script>${browserJS}</script>
@@ -102,8 +119,8 @@ let html = `<!DOCTYPE html>
     <span class="badge">TypeScript</span>
     <span class="badge">React / Next.js / Vanilla</span>
   </div>
-  <div class="install">npm install github:appcat-io/bannergen</div>
-  <div class="pre-release">Pre-release &mdash; not yet published to npm</div>
+  <a class="install" href="https://github.com/appcat-io/bannergen" target="_blank" rel="noopener"><svg class="gh-icon" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>appcat-io/bannergen</a>
+  <div class="pre-release">Pre-release &mdash; install from GitHub</div>
 </div>
 
 <div class="tryit">
@@ -256,28 +273,28 @@ const avatarSrc = generateAvatarDataURI({
 html += `<div class="section"><h2>API Reference</h2>
 
 <h3>BannerOptions / BannergenProps</h3>
-<table class="props-table">
+<div class="table-wrap"><table class="props-table">
 <tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr>
 <tr><td><code>name</code></td><td>string</td><td>required</td><td>Input string to generate from</td></tr>
 <tr><td><code>width</code></td><td>number</td><td>1500</td><td>Width in pixels</td></tr>
 <tr><td><code>height</code></td><td>number</td><td>500</td><td>Height in pixels</td></tr>
 <tr><td><code>variant</code></td><td>string</td><td>"auto"</td><td>"gradient" | "geometric" | "topographic" | "aurora" | "auto"</td></tr>
 <tr><td><code>colors</code></td><td>string[]</td><td>—</td><td>Custom palette (3+ hex strings)</td></tr>
-</table><br>
+</table></div><br>
 
 <h3>AvatarOptions / IdenticonProps</h3>
-<table class="props-table">
+<div class="table-wrap"><table class="props-table">
 <tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr>
 <tr><td><code>name</code></td><td>string</td><td>required</td><td>Input string to generate from</td></tr>
 <tr><td><code>size</code></td><td>number</td><td>128</td><td>Size in pixels (square)</td></tr>
 <tr><td><code>variant</code></td><td>string</td><td>"auto"</td><td>"pixelGrid" | "geometric" | "rings" | "auto"</td></tr>
 <tr><td><code>rounded</code></td><td>boolean</td><td>false</td><td>Render as circle</td></tr>
 <tr><td><code>colors</code></td><td>string[]</td><td>—</td><td>Custom palette (3+ hex strings)</td></tr>
-</table>
+</table></div>
 
 </div>`;
 
-html += `<div class="footer">@appcat/bannergen &mdash; Created by Matthew Peters with Claude Opus 4.6 &mdash; MIT License &mdash; <a href="https://github.com/appcat-io/bannergen" style="color:#666">GitHub</a></div>
+html += `<div class="footer">@appcat/bannergen &mdash; Created by Matthew Peters with Claude Opus 4.6 &mdash; MIT License &mdash; <a href="https://github.com/appcat-io/bannergen">GitHub</a></div>
 </div></body></html>`;
 
 mkdirSync("docs/dist", { recursive: true });
