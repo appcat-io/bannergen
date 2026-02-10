@@ -1,131 +1,91 @@
 # bannergen
 
-Deterministic profile banners from any string. Zero dependencies. Works with React, Next.js, Vite, Remix.
+Deterministic profile banners, identicon avatars, and album covers from any string. Zero dependencies. Works with React, Next.js, Vite, Remix.
 
-Same input → same banner. Always. No API calls, no storage, no randomness. Just beautiful, unique banners that work offline.
+Same input → same output. Always. No API calls, no storage, no randomness. Just beautiful, unique visuals that work offline.
 
 ## Install
 
 ```bash
-npm i bannergen
+npm i @appcat/bannergen
 # or
-pnpm add bannergen
+pnpm add @appcat/bannergen
 # or
-bun add bannergen
+bun add @appcat/bannergen
 # or
-yarn add bannergen
+yarn add @appcat/bannergen
 ```
 
 ## Quick Start
 
-### React Component
+### React Components
 
 ```tsx
-import { Bannergen } from "bannergen";
+import { Bannergen, Identicon, AlbumCover } from "@appcat/bannergen";
 
+// Banners
 <Bannergen name="alice" />
 <Bannergen name="bob" variant="aurora" />
-<Bannergen name="charlie" variant="geometric" />
+
+// Avatars
+<Identicon name="alice" size={64} rounded />
+
+// Album Covers
+<AlbumCover name="Midnight Sessions" />
+<AlbumCover name="Neon Dreams" variant="nebula" size={256} />
 ```
 
-### Next.js Image Route
+### Next.js Image Routes
 
 ```ts
 // app/api/banner/route.ts
-import { toBannergenHandler } from "bannergen/next";
-
+import { toBannergenHandler } from "@appcat/bannergen/next";
 export const { GET } = toBannergenHandler();
+
+// app/api/avatar/route.ts
+import { toIdenticonHandler } from "@appcat/bannergen/next";
+export const { GET } = toIdenticonHandler();
+
+// app/api/albumcover/route.ts
+import { toAlbumCoverHandler } from "@appcat/bannergen/next";
+export const { GET } = toAlbumCoverHandler();
 ```
 
 ```html
-<!-- use it anywhere you need a URL -->
 <img src="/api/banner?name=alice" />
-
-<!-- in emails, og images, etc. -->
-<img src="https://yoursite.com/api/banner?name=alice&variant=aurora" />
+<img src="/api/avatar?name=alice&rounded=true" />
+<img src="/api/albumcover?name=Midnight+Sessions&variant=nebula" />
 ```
 
 ### Vanilla JS / Node
 
 ```ts
-import { generateBannerSVG, generateBannerDataURI } from "bannergen";
+import {
+  generateBannerSVG,
+  generateAvatarSVG,
+  generateAlbumCoverSVG,
+} from "@appcat/bannergen";
 
-// Get raw SVG string
-const svg = generateBannerSVG({ name: "alice" });
-
-// Get data URI for <img> tags
-const dataUri = generateBannerDataURI({ name: "alice" });
+const banner = generateBannerSVG({ name: "alice" });
+const avatar = generateAvatarSVG({ name: "alice", rounded: true });
+const cover = generateAlbumCoverSVG({ name: "Midnight Sessions" });
 ```
 
-## Props
+## Banners
 
-### `name` (required)
+### Props
 
-The string to generate the banner from. Same name = same banner, always.
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `name` | string | required | Input string to generate from |
+| `variant` | string | `"auto"` | `"gradient"` \| `"geometric"` \| `"topographic"` \| `"aurora"` \| `"auto"` |
+| `width` | number | 1500 | Width in pixels |
+| `height` | number | 500 | Height in pixels |
+| `colors` | string[] | — | Custom palette (3+ hex strings) |
+| `borderRadius` | number \| string | — | CSS border radius |
+| `className` / `style` | — | — | Standard styling props |
 
-```tsx
-<Bannergen name="alice" />
-<Bannergen name="bob@example.com" />
-<Bannergen name="550e8400-e29b-41d4-a716-446655440000" />
-```
-
-### `variant`
-
-Pattern style. `"auto"` (default) picks deterministically from the name.
-
-```tsx
-<Bannergen name="demo" variant="gradient" />     // flowing gradients + mesh
-<Bannergen name="demo" variant="geometric" />     // triangles, hexagons, diamonds
-<Bannergen name="demo" variant="topographic" />   // contour lines, elevation maps
-<Bannergen name="demo" variant="aurora" />         // northern lights, glowing ribbons
-```
-
-### `width` / `height`
-
-Banner dimensions in pixels (default: 1500×500).
-
-```tsx
-<Bannergen name="demo" width={1500} height={500} />  // Twitter/X
-<Bannergen name="demo" width={1584} height={396} />  // LinkedIn
-<Bannergen name="demo" width={820} height={312} />   // Facebook
-<Bannergen name="demo" width={1280} height={480} />  // Discord
-```
-
-### `colors`
-
-Custom color palette (array of 3+ hex strings).
-
-```tsx
-<Bannergen name="demo" colors={["#264653", "#2a9d8f", "#e9c46a"]} />
-```
-
-### `borderRadius`
-
-```tsx
-<Bannergen name="demo" borderRadius={12} />
-<Bannergen name="demo" borderRadius="8px" />
-```
-
-### `className` / `style`
-
-Standard styling props.
-
-```tsx
-<Bannergen name="demo" className="shadow-lg" style={{ maxWidth: 600 }} />
-```
-
-## Banner with Fallback
-
-```tsx
-import { Banner, BannerImage, BannerFallback } from "bannergen";
-
-<Banner>
-  <BannerImage src="/header.jpg" />
-  <BannerFallback name="alice" />
-</Banner>
-```
-
-## Pattern Variants
+### Variants
 
 | Variant | Description |
 |---------|-------------|
@@ -135,14 +95,105 @@ import { Banner, BannerImage, BannerFallback } from "bannergen";
 | `aurora` | Northern lights ribbons, glowing particles, cosmic |
 | `auto` | Deterministically picks from name (default) |
 
+### Platform Dimensions
+
+```tsx
+<Bannergen name="demo" width={1500} height={500} />  // Twitter/X
+<Bannergen name="demo" width={1584} height={396} />  // LinkedIn
+<Bannergen name="demo" width={820} height={312} />   // Facebook
+<Bannergen name="demo" width={1280} height={480} />  // Discord
+```
+
+### Fallback Pattern
+
+```tsx
+import { Banner, BannerImage, BannerFallback } from "@appcat/bannergen";
+
+<Banner>
+  <BannerImage src="/header.jpg" />
+  <BannerFallback name="alice" />
+</Banner>
+```
+
+## Avatars
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `name` | string | required | Input string to generate from |
+| `variant` | string | `"auto"` | `"pixelGrid"` \| `"geometric"` \| `"rings"` \| `"auto"` |
+| `size` | number | 128 | Size in pixels (square) |
+| `rounded` | boolean | false | Render as circle |
+| `colors` | string[] | — | Custom palette (3+ hex strings) |
+| `className` / `style` | — | — | Standard styling props |
+
+### Variants
+
+| Variant | Description |
+|---------|-------------|
+| `pixelGrid` | Symmetric pixel grid identicon (GitHub-style) |
+| `geometric` | 4-fold rotational symmetry shapes |
+| `rings` | Concentric rings with dash patterns |
+| `auto` | Deterministically picks from name (default) |
+
+### Fallback Pattern
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from "@appcat/bannergen";
+
+<Avatar size={64} rounded>
+  <AvatarImage src="/profile.jpg" />
+  <AvatarFallback name="alice" />
+</Avatar>
+```
+
+## Album Covers
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `name` | string | required | Input string to generate from (album name, artist, etc.) |
+| `variant` | string | `"auto"` | `"fluidPaint"` \| `"tessellation"` \| `"noiseField"` \| `"nebula"` \| `"auto"` |
+| `size` | number | 512 | Size in pixels (square) |
+| `colors` | string[] | — | Custom palette (3+ hex strings) |
+| `borderRadius` | number \| string | — | CSS border radius |
+| `className` / `style` | — | — | Standard styling props |
+
+### Variants
+
+| Variant | Description |
+|---------|-------------|
+| `fluidPaint` | Abstract fluid blobs, organic shapes, paint-pour aesthetic |
+| `tessellation` | Bold geometric mosaic, stained-glass subdivision |
+| `noiseField` | Organic flow field texture, dense curved paths |
+| `nebula` | Deep space nebula clouds, stars, cosmic atmosphere |
+| `auto` | Deterministically picks from name (default) |
+
+### Fallback Pattern
+
+```tsx
+import { AlbumArt, AlbumArtImage, AlbumArtFallback } from "@appcat/bannergen";
+
+<AlbumArt size={256}>
+  <AlbumArtImage src="/cover.jpg" />
+  <AlbumArtFallback name="Midnight Sessions" />
+</AlbumArt>
+```
+
 ## Advanced: Direct SVG Generation
 
 For non-React usage or server-side generation:
 
 ```ts
-import { generateBannerSVG } from "bannergen";
+import {
+  generateBannerSVG,
+  generateAvatarSVG,
+  generateAlbumCoverSVG,
+} from "@appcat/bannergen";
 
-const svg = generateBannerSVG({
+const banner = generateBannerSVG({
   name: "alice",
   width: 1500,
   height: 500,
@@ -150,8 +201,18 @@ const svg = generateBannerSVG({
   colors: ["#ff6b6b", "#4ecdc4", "#45b7d1"],
 });
 
-// Write to file, embed in HTML, etc.
-fs.writeFileSync("banner.svg", svg);
+const avatar = generateAvatarSVG({
+  name: "alice",
+  size: 128,
+  variant: "pixelGrid",
+  rounded: true,
+});
+
+const cover = generateAlbumCoverSVG({
+  name: "Midnight Sessions",
+  size: 512,
+  variant: "nebula",
+});
 ```
 
 ## Why bannergen?
@@ -162,13 +223,13 @@ fs.writeFileSync("banner.svg", svg);
 - **Tiny** — pure SVG generation, no canvas
 - **TypeScript** — fully typed
 - **Accessible** — proper ARIA roles
-- **4 pattern styles** — gradient, geometric, topographic, aurora
+- **11 pattern styles** — 4 banner, 3 avatar, 4 album cover variants
 - **Customizable** — colors, dimensions, variants
-- **Framework-agnostic core** — React component + vanilla `generateBannerSVG()`
+- **Framework-agnostic core** — React components + vanilla generators
 
 ## Use Cases
 
-Profile banners, header images, OG images, email headers, placeholder graphics, team directories, social media covers, generative art, AI agent identities.
+Profile banners, header images, OG images, email headers, placeholder graphics, team directories, social media covers, album artwork, music platform placeholders, generative art, AI agent identities.
 
 ## License
 

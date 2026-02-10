@@ -1,5 +1,6 @@
 import { generateBannerSVG } from "../dist/index.mjs";
 import { generateAvatarSVG } from "../dist/index.mjs";
+import { generateAlbumCoverSVG } from "../dist/index.mjs";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 
 const browserJS = readFileSync("dist/bannergen.browser.global.js", "utf-8");
@@ -7,12 +8,13 @@ const browserJS = readFileSync("dist/bannergen.browser.global.js", "utf-8");
 const names = ["Matthew Peters", "maia", "hello world", "bannergen", "soundlink", "aurora", "delta", "echo"];
 const bannerVariants = ["gradient", "geometric", "topographic", "aurora"];
 const avatarVariants = ["pixelGrid", "geometric", "rings"];
+const albumCoverVariants = ["fluidPaint", "tessellation", "noiseField", "nebula"];
 
 let html = `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>@appcat/bannergen — Deterministic Banners & Avatars</title>
+<title>@appcat/bannergen — Deterministic Banners, Avatars & Album Covers</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #0a0a0a; color: #e0e0e0; font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; }
@@ -51,10 +53,14 @@ let html = `<!DOCTYPE html>
   .tryit-controls input[type="checkbox"] { accent-color: #4ade80; }
   .tryit-banner { border-radius: 10px; overflow: hidden; margin-bottom: 1rem; border: 1px solid #222; }
   .tryit-banner svg { width: 100%; height: auto; display: block; }
-  .tryit-avatars { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .tryit-avatars { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
   .tryit-avatar-item { text-align: center; }
   .tryit-avatar-item svg { display: block; }
   .tryit-avatar-item .label { font-size: 0.7rem; color: #555; margin-top: 0.3rem; }
+  .tryit-albumcovers { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .tryit-albumcover-item { text-align: center; }
+  .tryit-albumcover-item svg { display: block; border-radius: 6px; }
+  .tryit-albumcover-item .label { font-size: 0.7rem; color: #555; margin-top: 0.3rem; }
 
   /* Sections */
   .section { margin-bottom: 3rem; }
@@ -74,6 +80,14 @@ let html = `<!DOCTYPE html>
   .avatar-item svg { display: block; border-radius: 4px; }
   .avatar-item.rounded svg { border-radius: 50%; }
   .avatar-item .label { font-size: 0.7rem; color: #666; margin-top: 0.35rem; }
+
+  /* Album Cover Grid */
+  .albumcover-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  @media (max-width: 800px) { .albumcover-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .albumcover-grid { grid-template-columns: 1fr 1fr; } }
+  .albumcover-card { background: #141414; border-radius: 10px; overflow: hidden; border: 1px solid #222; }
+  .albumcover-card svg { width: 100%; height: auto; display: block; }
+  .albumcover-card .label { padding: 0.5rem 0.75rem; font-size: 0.75rem; color: #666; display: flex; justify-content: space-between; }
 
   /* Code */
   .code-section { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -112,7 +126,7 @@ let html = `<!DOCTYPE html>
 
 <div class="hero">
   <h1>@appcat/<span>bannergen</span></h1>
-  <p>Deterministic profile banners and identicon avatars from any string. Zero dependencies. Same input, same output. Always.</p>
+  <p>Deterministic profile banners, identicon avatars, and album covers from any string. Zero dependencies. Same input, same output. Always.</p>
   <div class="badges">
     <span class="badge">Zero Dependencies</span>
     <span class="badge">Deterministic</span>
@@ -141,10 +155,18 @@ let html = `<!DOCTYPE html>
       <option value="geometric">geometric</option>
       <option value="rings">rings</option>
     </select>
+    <select id="tryit-albumcover-variant">
+      <option value="auto">Album Cover: auto</option>
+      <option value="fluidPaint">fluidPaint</option>
+      <option value="tessellation">tessellation</option>
+      <option value="noiseField">noiseField</option>
+      <option value="nebula">nebula</option>
+    </select>
     <label><input type="checkbox" id="tryit-rounded" /> Rounded</label>
   </div>
   <div class="tryit-banner" id="tryit-banner-preview"></div>
   <div class="tryit-avatars" id="tryit-avatar-preview"></div>
+  <div class="tryit-albumcovers" id="tryit-albumcover-preview"></div>
 </div>
 
 <script>
@@ -152,14 +174,17 @@ let html = `<!DOCTYPE html>
   var nameInput = document.getElementById("tryit-name");
   var bannerVariant = document.getElementById("tryit-banner-variant");
   var avatarVariant = document.getElementById("tryit-avatar-variant");
+  var albumcoverVariant = document.getElementById("tryit-albumcover-variant");
   var roundedCheck = document.getElementById("tryit-rounded");
   var bannerPreview = document.getElementById("tryit-banner-preview");
   var avatarPreview = document.getElementById("tryit-avatar-preview");
+  var albumcoverPreview = document.getElementById("tryit-albumcover-preview");
 
   function update() {
     var name = nameInput.value || "default";
     var bv = bannerVariant.value;
     var av = avatarVariant.value;
+    var cv = albumcoverVariant.value;
     var rounded = roundedCheck.checked;
 
     bannerPreview.innerHTML = bannergen.generateBannerSVG({ name: name, width: 1500, height: 500, variant: bv });
@@ -173,11 +198,21 @@ let html = `<!DOCTYPE html>
       html += '<div class="tryit-avatar-item"><div style="' + br + 'overflow:hidden;width:' + s + 'px;height:' + s + 'px;">' + svg + '</div><div class="label">' + s + 'px</div></div>';
     }
     avatarPreview.innerHTML = html;
+
+    var coverSizes = [160, 128, 96, 64];
+    var coverHtml = "";
+    for (var j = 0; j < coverSizes.length; j++) {
+      var cs = coverSizes[j];
+      var coverSvg = bannergen.generateAlbumCoverSVG({ name: name, size: cs, variant: cv });
+      coverHtml += '<div class="tryit-albumcover-item"><div style="border-radius:6px;overflow:hidden;width:' + cs + 'px;height:' + cs + 'px;">' + coverSvg + '</div><div class="label">' + cs + 'px</div></div>';
+    }
+    albumcoverPreview.innerHTML = coverHtml;
   }
 
   nameInput.addEventListener("input", update);
   bannerVariant.addEventListener("change", update);
   avatarVariant.addEventListener("change", update);
+  albumcoverVariant.addEventListener("change", update);
   roundedCheck.addEventListener("change", update);
   update();
 })();
@@ -215,6 +250,26 @@ for (const name of names) {
 html += `</div>`;
 html += `</div>`;
 
+// Album Cover Gallery
+html += `<div class="section"><h2>Album Cover Gallery</h2>`;
+
+for (const name of names.slice(0, 4)) {
+  html += `<h3>"${name}"</h3><div class="albumcover-grid">`;
+  for (const variant of albumCoverVariants) {
+    const svg = generateAlbumCoverSVG({ name, size: 256, variant });
+    html += `<div class="albumcover-card">${svg}<div class="label"><span>${name}</span><span>${variant}</span></div></div>`;
+  }
+  html += `</div><br>`;
+}
+
+html += `<h3>Auto Variant</h3><div class="albumcover-grid">`;
+for (const name of names) {
+  const svg = generateAlbumCoverSVG({ name, size: 256, variant: "auto" });
+  html += `<div class="albumcover-card">${svg}<div class="label"><span>${name}</span><span>auto</span></div></div>`;
+}
+html += `</div>`;
+html += `</div>`;
+
 // Code Examples
 html += `<div class="section"><h2>Usage</h2><div class="code-section">
 <div class="code-block">
@@ -222,6 +277,7 @@ html += `<div class="section"><h2>Usage</h2><div class="code-section">
   <pre>import {
   Bannergen,
   Identicon,
+  AlbumCover,
 } from "@appcat/bannergen";
 
 // Banner
@@ -230,13 +286,18 @@ html += `<div class="section"><h2>Usage</h2><div class="code-section">
 
 // Avatar
 &lt;Identicon name="maia" size={64} /&gt;
-&lt;Identicon name="bob" rounded /&gt;</pre>
+&lt;Identicon name="bob" rounded /&gt;
+
+// Album Cover
+&lt;AlbumCover name="Midnight Sessions" /&gt;
+&lt;AlbumCover name="Neon Dreams" variant="nebula" /&gt;</pre>
 </div>
 <div class="code-block">
   <div class="code-title">Vanilla JS / Node.js</div>
   <pre>import {
   generateBannerSVG,
-  generateAvatarSVG
+  generateAvatarSVG,
+  generateAlbumCoverSVG,
 } from "@appcat/bannergen";
 
 const banner = generateBannerSVG({ name: "maia" });
@@ -244,6 +305,10 @@ const avatar = generateAvatarSVG({
   name: "maia",
   size: 128,
   rounded: true,
+});
+const cover = generateAlbumCoverSVG({
+  name: "Midnight Sessions",
+  size: 512,
 });</pre>
 </div>
 <div class="code-block">
@@ -258,13 +323,20 @@ export const { GET } = toBannergenHandler();
 import {
   toIdenticonHandler,
 } from "@appcat/bannergen/next";
-export const { GET } = toIdenticonHandler();</pre>
+export const { GET } = toIdenticonHandler();
+
+// app/api/albumcover/route.ts
+import {
+  toAlbumCoverHandler,
+} from "@appcat/bannergen/next";
+export const { GET } = toAlbumCoverHandler();</pre>
 </div>
 <div class="code-block">
   <div class="code-title">Data URI (img tag)</div>
   <pre>import {
   generateBannerDataURI,
-  generateAvatarDataURI
+  generateAvatarDataURI,
+  generateAlbumCoverDataURI,
 } from "@appcat/bannergen";
 
 const src = generateBannerDataURI({ name: "maia" });
@@ -273,6 +345,10 @@ const src = generateBannerDataURI({ name: "maia" });
 const avatarSrc = generateAvatarDataURI({
   name: "maia",
   rounded: true,
+});
+
+const coverSrc = generateAlbumCoverDataURI({
+  name: "Midnight Sessions",
 });</pre>
 </div>
 </div></div>`;
@@ -287,7 +363,7 @@ html += `<div class="section"><h2>API Reference</h2>
 <tr><td><code>width</code></td><td>number</td><td>1500</td><td>Width in pixels</td></tr>
 <tr><td><code>height</code></td><td>number</td><td>500</td><td>Height in pixels</td></tr>
 <tr><td><code>variant</code></td><td>string</td><td>"auto"</td><td>"gradient" | "geometric" | "topographic" | "aurora" | "auto"</td></tr>
-<tr><td><code>colors</code></td><td>string[]</td><td>—</td><td>Custom palette (3+ hex strings)</td></tr>
+<tr><td><code>colors</code></td><td>string[]</td><td>&mdash;</td><td>Custom palette (3+ hex strings)</td></tr>
 </table></div><br>
 
 <h3>AvatarOptions / IdenticonProps</h3>
@@ -297,7 +373,16 @@ html += `<div class="section"><h2>API Reference</h2>
 <tr><td><code>size</code></td><td>number</td><td>128</td><td>Size in pixels (square)</td></tr>
 <tr><td><code>variant</code></td><td>string</td><td>"auto"</td><td>"pixelGrid" | "geometric" | "rings" | "auto"</td></tr>
 <tr><td><code>rounded</code></td><td>boolean</td><td>false</td><td>Render as circle</td></tr>
-<tr><td><code>colors</code></td><td>string[]</td><td>—</td><td>Custom palette (3+ hex strings)</td></tr>
+<tr><td><code>colors</code></td><td>string[]</td><td>&mdash;</td><td>Custom palette (3+ hex strings)</td></tr>
+</table></div><br>
+
+<h3>AlbumCoverOptions / AlbumCoverProps</h3>
+<div class="table-wrap"><table class="props-table">
+<tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td><code>name</code></td><td>string</td><td>required</td><td>Input string to generate from</td></tr>
+<tr><td><code>size</code></td><td>number</td><td>512</td><td>Size in pixels (square)</td></tr>
+<tr><td><code>variant</code></td><td>string</td><td>"auto"</td><td>"fluidPaint" | "tessellation" | "noiseField" | "nebula" | "auto"</td></tr>
+<tr><td><code>colors</code></td><td>string[]</td><td>&mdash;</td><td>Custom palette (3+ hex strings)</td></tr>
 </table></div>
 
 </div>`;
