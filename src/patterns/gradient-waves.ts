@@ -1,12 +1,13 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
 
 export function generateGradientWaves(
   h: HashParams,
-  palette: BannerPalette,
+  palette: Palette,
   width: number,
-  height: number
+  height: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];
@@ -14,12 +15,12 @@ export function generateGradientWaves(
   // Background gradient
   const bgAngle = h.float(0, 360);
   defs.push(`
-    <linearGradient id="bg" gradientTransform="rotate(${bgAngle})">
+    <linearGradient id="${prefix}bg" gradientTransform="rotate(${bgAngle})">
       <stop offset="0%" stop-color="${hslToString(palette.background)}" />
       <stop offset="100%" stop-color="${hslToString({ ...palette.background, l: palette.background.l + 8 })}" />
     </linearGradient>
   `);
-  elements.push(`<rect width="${width}" height="${height}" fill="url(#bg)" />`);
+  elements.push(`<rect width="${width}" height="${height}" fill="url(#${prefix}bg)" />`);
 
   // Mesh gradient blobs
   const blobCount = h.int(3, 6);
@@ -32,7 +33,7 @@ export function generateGradientWaves(
     const opacity = h.float(0.15, 0.45);
 
     defs.push(`
-      <radialGradient id="blob${i}" cx="50%" cy="50%" r="50%">
+      <radialGradient id="${prefix}blob${i}" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="${hslToString(color)}" stop-opacity="${opacity}" />
         <stop offset="70%" stop-color="${hslToString(color)}" stop-opacity="${opacity * 0.3}" />
         <stop offset="100%" stop-color="${hslToString(color)}" stop-opacity="0" />
@@ -40,7 +41,7 @@ export function generateGradientWaves(
     `);
 
     elements.push(
-      `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#blob${i})" />`
+      `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="url(#${prefix}blob${i})" />`
     );
   }
 
@@ -55,7 +56,7 @@ export function generateGradientWaves(
     const opacity = h.float(0.08, 0.3);
     const strokeW = h.float(1, 4);
 
-    let d = `M 0 ${baseY}`;
+    let d = `M 0 ${baseY.toFixed(1)}`;
     const segments = 20;
     for (let j = 1; j <= segments; j++) {
       const x = (j / segments) * width;
@@ -71,7 +72,7 @@ export function generateGradientWaves(
         Math.sin(((j - 0.5) / segments) * Math.PI * freq + phase) *
           amplitude *
           1.2;
-      d += ` Q ${cpx} ${cpy} ${x} ${y}`;
+      d += ` Q ${cpx.toFixed(1)} ${cpy.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
     }
 
     // Fill area below wave
@@ -89,13 +90,13 @@ export function generateGradientWaves(
 
   // Subtle grain overlay
   defs.push(`
-    <filter id="grain">
+    <filter id="${prefix}grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
     </filter>
   `);
   elements.push(
-    `<rect width="${width}" height="${height}" filter="url(#grain)" opacity="0.04" />`
+    `<rect width="${width}" height="${height}" filter="url(#${prefix}grain)" opacity="0.04" />`
   );
 
   return `<defs>${defs.join("")}</defs>${elements.join("")}`;

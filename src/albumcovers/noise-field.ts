@@ -1,11 +1,13 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
+import { createNoise2D } from "../utils/noise";
 
 export function generateNoiseField(
   h: HashParams,
-  palette: BannerPalette,
-  size: number
+  palette: Palette,
+  size: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];
@@ -13,52 +15,19 @@ export function generateNoiseField(
   // Background gradient
   const bgAngle = h.float(0, 360);
   defs.push(`
-    <linearGradient id="nf-bg" gradientTransform="rotate(${bgAngle})">
+    <linearGradient id="${prefix}nf-bg" gradientTransform="rotate(${bgAngle})">
       <stop offset="0%" stop-color="${hslToString(palette.background)}" />
       <stop offset="100%" stop-color="${hslToString({ ...palette.background, l: palette.background.l + 5, h: palette.background.h + 15 })}" />
     </linearGradient>
   `);
-  elements.push(`<rect width="${size}" height="${size}" fill="url(#nf-bg)" />`);
+  elements.push(`<rect width="${size}" height="${size}" fill="url(#${prefix}nf-bg)" />`);
 
   // Noise parameters
   const noiseScale = h.float(0.005, 0.015);
   const octaves = h.int(2, 4);
   const seedX = h.float(0, 1000);
   const seedY = h.float(0, 1000);
-
-  function pseudoRand(x: number, y: number): number {
-    const n = Math.sin(x * 127.1 + y * 311.7 + seedX * 0.01) * 43758.5453;
-    return n - Math.floor(n);
-  }
-
-  function noise2D(x: number, y: number): number {
-    let val = 0;
-    let amp = 1;
-    let freq = 1;
-    let maxAmp = 0;
-    for (let o = 0; o < octaves; o++) {
-      const nx = (x * noiseScale * freq + seedX) * 1.17;
-      const ny = (y * noiseScale * freq + seedY) * 1.17;
-      const ix = Math.floor(nx);
-      const iy = Math.floor(ny);
-      const fx = nx - ix;
-      const fy = ny - iy;
-      const smooth = (t: number) => t * t * (3 - 2 * t);
-      const sfx = smooth(fx);
-      const sfy = smooth(fy);
-      const n00 = pseudoRand(ix, iy);
-      const n10 = pseudoRand(ix + 1, iy);
-      const n01 = pseudoRand(ix, iy + 1);
-      const n11 = pseudoRand(ix + 1, iy + 1);
-      const nx0 = n00 + (n10 - n00) * sfx;
-      const nx1 = n01 + (n11 - n01) * sfx;
-      val += (nx0 + (nx1 - nx0) * sfy) * amp;
-      maxAmp += amp;
-      amp *= 0.5;
-      freq *= 2;
-    }
-    return val / maxAmp;
-  }
+  const noise2D = createNoise2D(noiseScale, octaves, seedX, seedY);
 
   // Color palette for flow lines
   const colors = [palette.primary, palette.secondary, palette.accent, palette.highlight];
@@ -83,7 +52,8 @@ export function generateNoiseField(
       const noiseVal = noise2D(x, y);
       const colorIndex = Math.floor(noiseVal * colors.length) % colors.length;
       const color = colors[Math.abs(colorIndex)];
-      const opacity = baseOpacity * (0.5 + noiseVal * 0.8);
+      const rawOpacity = baseOpacity * (0.5 + noiseVal * 0.8);
+      const opacity = Math.round(rawOpacity * 20) / 20; // quantize for batching
 
       // Trace a short path following the flow
       let d = `M${x.toFixed(1)},${y.toFixed(1)}`;
@@ -120,7 +90,7 @@ export function generateNoiseField(
     const py = h.float(0, size);
     const noiseVal = noise2D(px, py);
     const color = h.pick(colors);
-    const r = h.float(0.5, 2.5);
+    const r = +h.float(0.5, 2.5).toFixed(1);
     const opacity = h.float(0.1, 0.4) * (0.3 + noiseVal);
     elements.push(
       `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${r}" fill="${hslToString(color, opacity)}" />`
@@ -129,24 +99,24 @@ export function generateNoiseField(
 
   // Radial vignette
   defs.push(`
-    <radialGradient id="nf-vignette" cx="50%" cy="50%" r="70%">
+    <radialGradient id="${prefix}nf-vignette" cx="50%" cy="50%" r="70%">
       <stop offset="0%" stop-color="transparent" />
       <stop offset="100%" stop-color="${hslToString(palette.background, 0.6)}" />
     </radialGradient>
   `);
   elements.push(
-    `<rect width="${size}" height="${size}" fill="url(#nf-vignette)" />`
+    `<rect width="${size}" height="${size}" fill="url(#${prefix}nf-vignette)" />`
   );
 
   // Grain overlay
   defs.push(`
-    <filter id="nf-grain">
+    <filter id="${prefix}nf-grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
     </filter>
   `);
   elements.push(
-    `<rect width="${size}" height="${size}" filter="url(#nf-grain)" opacity="0.04" />`
+    `<rect width="${size}" height="${size}" filter="url(#${prefix}nf-grain)" opacity="0.04" />`
   );
 
   return `<defs>${defs.join("")}</defs>${elements.join("")}`;

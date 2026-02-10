@@ -26,4 +26,4 @@ export type { AlbumCoverProps } from "./AlbumArt";
 export { hashString } from "./utils/hash";
 export type { HashParams } from "./utils/hash";
 export { generatePalette, hslToString, hslToHex } from "./utils/colors";
-export type { BannerPalette, HSL } from "./utils/colors";
+export type { Palette, BannerPalette, HSL } from "./utils/colors";

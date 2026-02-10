@@ -46,12 +46,12 @@ describe("generatePalette", () => {
 describe("hslToString", () => {
   it("formats HSL correctly", () => {
     const result = hslToString({ h: 180, s: 50, l: 60 });
-    assert.strictEqual(result, "hsl(180, 50%, 60%)");
+    assert.strictEqual(result, "hsl(180,50%,60%)");
   });
 
   it("formats HSLA with alpha", () => {
     const result = hslToString({ h: 180, s: 50, l: 60 }, 0.5);
-    assert.strictEqual(result, "hsla(180, 50%, 60%, 0.5)");
+    assert.strictEqual(result, "hsla(180,50%,60%,0.5)");
   });
 });
 

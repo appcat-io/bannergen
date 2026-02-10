@@ -58,7 +58,8 @@ export function generateBannerSVG(options: BannerOptions): string {
   const patternFn = PATTERN_FNS[resolvedVariant];
   // Re-hash so the pattern gets fresh randomness after the palette used some
   const patternHash = hashString(name + ":" + resolvedVariant);
-  const inner = patternFn(patternHash, palette, width, height);
+  const prefix = patternHash.seeds[0].toString(36).slice(0, 4);
+  const inner = patternFn(patternHash, palette, width, height, prefix);
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,

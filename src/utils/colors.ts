@@ -7,10 +7,13 @@ export interface HSL {
 }
 
 export function hslToString(c: HSL, alpha?: number): string {
+  const h = +c.h.toFixed(1);
+  const s = +c.s.toFixed(1);
+  const l = +c.l.toFixed(1);
   if (alpha !== undefined) {
-    return `hsla(${c.h}, ${c.s}%, ${c.l}%, ${alpha})`;
+    return `hsla(${h},${s}%,${l}%,${+alpha.toFixed(3)})`;
   }
-  return `hsl(${c.h}, ${c.s}%, ${c.l}%)`;
+  return `hsl(${h},${s}%,${l}%)`;
 }
 
 export function hslToHex(c: HSL): string {
@@ -39,7 +42,7 @@ const PALETTE_STRATEGIES = [
 
 export type PaletteStrategy = (typeof PALETTE_STRATEGIES)[number];
 
-export interface BannerPalette {
+export interface Palette {
   primary: HSL;
   secondary: HSL;
   accent: HSL;
@@ -48,10 +51,13 @@ export interface BannerPalette {
   strategy: PaletteStrategy;
 }
 
+/** @deprecated Use `Palette` instead */
+export type BannerPalette = Palette;
+
 export function generatePalette(
   h: HashParams,
   customColors?: string[]
-): BannerPalette {
+): Palette {
   if (customColors && customColors.length >= 3) {
     return customColorsToPalette(customColors);
   }
@@ -174,14 +180,17 @@ export function generatePalette(
 
 function clampHSL(c: HSL): HSL {
   return {
-    h: ((c.h % 360) + 360) % 360,
-    s: Math.max(0, Math.min(100, c.s)),
-    l: Math.max(0, Math.min(100, c.l)),
+    h: Math.round(((c.h % 360) + 360) % 360 * 10) / 10,
+    s: Math.round(Math.max(0, Math.min(100, c.s)) * 10) / 10,
+    l: Math.round(Math.max(0, Math.min(100, c.l)) * 10) / 10,
   };
 }
 
 function hexToHSL(hex: string): HSL {
-  hex = hex.replace("#", "");
+  hex = hex.replace(/^#/, "");
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return { h: 0, s: 50, l: 50 };
+  }
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
   const b = parseInt(hex.substring(4, 6), 16) / 255;
@@ -208,7 +217,7 @@ function hexToHSL(hex: string): HSL {
   return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
-function customColorsToPalette(colors: string[]): BannerPalette {
+function customColorsToPalette(colors: string[]): Palette {
   const hsls = colors.map(hexToHSL);
   return {
     primary: hsls[0],

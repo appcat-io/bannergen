@@ -1,14 +1,18 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
 
 type GeoStyle = "triangles" | "hexagons" | "diamonds" | "circles" | "bars";
 
+/** Round a number to 1 decimal place */
+const r = (n: number) => +n.toFixed(1);
+
 export function generateGeometric(
   h: HashParams,
-  palette: BannerPalette,
+  palette: Palette,
   width: number,
-  height: number
+  height: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];
@@ -21,14 +25,14 @@ export function generateGeometric(
   ]);
 
   // Background
-  const bgAngle = h.float(120, 240);
+  const bgAngle = r(h.float(120, 240));
   defs.push(`
-    <linearGradient id="gbg" gradientTransform="rotate(${bgAngle})">
+    <linearGradient id="${prefix}gbg" gradientTransform="rotate(${bgAngle})">
       <stop offset="0%" stop-color="${hslToString(palette.background)}" />
       <stop offset="100%" stop-color="${hslToString({ ...palette.background, l: palette.background.l + 6, h: palette.background.h + 10 })}" />
     </linearGradient>
   `);
-  elements.push(`<rect width="${width}" height="${height}" fill="url(#gbg)" />`);
+  elements.push(`<rect width="${width}" height="${height}" fill="url(#${prefix}gbg)" />`);
 
   const colors = [palette.primary, palette.secondary, palette.accent, palette.highlight];
 
@@ -45,8 +49,8 @@ export function generateGeometric(
           const opacity = h.float(0.08, 0.5);
           const up = (col + row) % 2 === 0;
           const pts = up
-            ? `${x},${y + cellSize * 0.866} ${x + cellSize / 2},${y} ${x + cellSize},${y + cellSize * 0.866}`
-            : `${x},${y} ${x + cellSize / 2},${y + cellSize * 0.866} ${x + cellSize},${y}`;
+            ? `${r(x)},${r(y + cellSize * 0.866)} ${r(x + cellSize / 2)},${r(y)} ${r(x + cellSize)},${r(y + cellSize * 0.866)}`
+            : `${r(x)},${r(y)} ${r(x + cellSize / 2)},${r(y + cellSize * 0.866)} ${r(x + cellSize)},${r(y)}`;
           elements.push(
             `<polygon points="${pts}" fill="${hslToString(color, opacity)}" stroke="${hslToString(color, opacity * 0.3)}" stroke-width="0.5" />`
           );
@@ -69,7 +73,7 @@ export function generateGeometric(
           const opacity = h.float(0.06, 0.45);
           const pts = Array.from({ length: 6 }, (_, i) => {
             const angle = (Math.PI / 3) * i - Math.PI / 6;
-            return `${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`;
+            return `${r(cx + size * Math.cos(angle))},${r(cy + size * Math.sin(angle))}`;
           }).join(" ");
           elements.push(
             `<polygon points="${pts}" fill="${hslToString(color, opacity)}" stroke="${hslToString(palette.highlight, 0.08)}" stroke-width="1" />`
@@ -90,7 +94,7 @@ export function generateGeometric(
           const y = row * cellH;
           const color = h.pick(colors);
           const opacity = h.float(0.06, 0.4);
-          const pts = `${x},${y - cellH / 2} ${x + cellW / 2},${y} ${x},${y + cellH / 2} ${x - cellW / 2},${y}`;
+          const pts = `${r(x)},${r(y - cellH / 2)} ${r(x + cellW / 2)},${r(y)} ${r(x)},${r(y + cellH / 2)} ${r(x - cellW / 2)},${r(y)}`;
           elements.push(
             `<polygon points="${pts}" fill="${hslToString(color, opacity)}" />`
           );
@@ -102,19 +106,19 @@ export function generateGeometric(
     case "circles": {
       const count = h.int(15, 50);
       for (let i = 0; i < count; i++) {
-        const cx = h.float(-20, width + 20);
-        const cy = h.float(-20, height + 20);
-        const r = h.float(8, Math.min(width, height) * 0.25);
+        const cx = r(h.float(-20, width + 20));
+        const cy = r(h.float(-20, height + 20));
+        const cr = r(h.float(8, Math.min(width, height) * 0.25));
         const color = h.pick(colors);
         const opacity = h.float(0.06, 0.3);
         const filled = h.rand() > 0.4;
         if (filled) {
           elements.push(
-            `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${hslToString(color, opacity)}" />`
+            `<circle cx="${cx}" cy="${cy}" r="${cr}" fill="${hslToString(color, opacity)}" />`
           );
         } else {
           elements.push(
-            `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${hslToString(color, opacity)}" stroke-width="${h.float(1, 3)}" />`
+            `<circle cx="${cx}" cy="${cy}" r="${cr}" fill="none" stroke="${hslToString(color, opacity)}" stroke-width="${r(h.float(1, 3))}" />`
           );
         }
       }
@@ -128,25 +132,25 @@ export function generateGeometric(
       if (vertical) {
         const barW = (width + gap) / count - gap;
         for (let i = 0; i < count; i++) {
-          const x = i * (barW + gap);
+          const x = r(i * (barW + gap));
           const color = h.pick(colors);
           const opacity = h.float(0.1, 0.5);
           const barH = h.float(height * 0.2, height);
-          const y = h.float(0, height - barH);
+          const y = r(h.float(0, height - barH));
           elements.push(
-            `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="${h.float(0, 4)}" fill="${hslToString(color, opacity)}" />`
+            `<rect x="${x}" y="${y}" width="${r(barW)}" height="${r(barH)}" rx="${r(h.float(0, 4))}" fill="${hslToString(color, opacity)}" />`
           );
         }
       } else {
         const barH = (height + gap) / count - gap;
         for (let i = 0; i < count; i++) {
-          const y = i * (barH + gap);
+          const y = r(i * (barH + gap));
           const color = h.pick(colors);
           const opacity = h.float(0.1, 0.5);
           const barW = h.float(width * 0.2, width);
-          const x = h.float(0, width - barW);
+          const x = r(h.float(0, width - barW));
           elements.push(
-            `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="${h.float(0, 4)}" fill="${hslToString(color, opacity)}" />`
+            `<rect x="${x}" y="${y}" width="${r(barW)}" height="${r(barH)}" rx="${r(h.float(0, 4))}" fill="${hslToString(color, opacity)}" />`
           );
         }
       }
@@ -157,24 +161,24 @@ export function generateGeometric(
   // Accent overlay lines
   const lineCount = h.int(0, 5);
   for (let i = 0; i < lineCount; i++) {
-    const x1 = h.float(0, width);
-    const y1 = h.float(0, height);
-    const x2 = h.float(0, width);
-    const y2 = h.float(0, height);
+    const x1 = r(h.float(0, width));
+    const y1 = r(h.float(0, height));
+    const x2 = r(h.float(0, width));
+    const y2 = r(h.float(0, height));
     elements.push(
-      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hslToString(palette.highlight, h.float(0.05, 0.2))}" stroke-width="${h.float(0.5, 2)}" />`
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hslToString(palette.highlight, h.float(0.05, 0.2))}" stroke-width="${r(h.float(0.5, 2))}" />`
     );
   }
 
   // Grain
   defs.push(`
-    <filter id="ggrain">
+    <filter id="${prefix}ggrain">
       <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
     </filter>
   `);
   elements.push(
-    `<rect width="${width}" height="${height}" filter="url(#ggrain)" opacity="0.03" />`
+    `<rect width="${width}" height="${height}" filter="url(#${prefix}ggrain)" opacity="0.03" />`
   );
 
   return `<defs>${defs.join("")}</defs>${elements.join("")}`;

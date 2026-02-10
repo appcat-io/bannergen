@@ -1,24 +1,26 @@
 import type { HashParams } from "../utils/hash";
-import type { BannerPalette } from "../utils/colors";
+import type { Palette } from "../utils/colors";
 import { hslToString } from "../utils/colors";
+import { createNoise2D } from "../utils/noise";
 
 export function generateTopographic(
   h: HashParams,
-  palette: BannerPalette,
+  palette: Palette,
   width: number,
-  height: number
+  height: number,
+  prefix: string = ""
 ): string {
   const defs: string[] = [];
   const elements: string[] = [];
 
   // Background
   defs.push(`
-    <linearGradient id="tbg" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="${prefix}tbg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="${hslToString(palette.background)}" />
       <stop offset="100%" stop-color="${hslToString({ ...palette.background, l: palette.background.l + 5, h: palette.background.h + 15 })}" />
     </linearGradient>
   `);
-  elements.push(`<rect width="${width}" height="${height}" fill="url(#tbg)" />`);
+  elements.push(`<rect width="${width}" height="${height}" fill="url(#${prefix}tbg)" />`);
 
   // Generate contour centers
   const centers = h.int(2, 5);
@@ -29,53 +31,18 @@ export function generateTopographic(
     cy.push(h.float(height * 0.1, height * 0.9));
   }
 
-  // Simple 2D noise function (seeded)
+  // 2D noise function (seeded)
   const noiseScale = h.float(0.004, 0.012);
   const octaves = h.int(2, 4);
   const seedX = h.float(0, 1000);
   const seedY = h.float(0, 1000);
-
-  function noise2D(x: number, y: number): number {
-    // Simple value noise approximation
-    let val = 0;
-    let amp = 1;
-    let freq = 1;
-    let maxAmp = 0;
-    for (let o = 0; o < octaves; o++) {
-      const nx = (x * noiseScale * freq + seedX) * 1.17;
-      const ny = (y * noiseScale * freq + seedY) * 1.17;
-      // Hash-based noise
-      const ix = Math.floor(nx);
-      const iy = Math.floor(ny);
-      const fx = nx - ix;
-      const fy = ny - iy;
-      const smooth = (t: number) => t * t * (3 - 2 * t);
-      const sfx = smooth(fx);
-      const sfy = smooth(fy);
-      const n00 = pseudoRand(ix, iy);
-      const n10 = pseudoRand(ix + 1, iy);
-      const n01 = pseudoRand(ix, iy + 1);
-      const n11 = pseudoRand(ix + 1, iy + 1);
-      const nx0 = n00 + (n10 - n00) * sfx;
-      const nx1 = n01 + (n11 - n01) * sfx;
-      val += (nx0 + (nx1 - nx0) * sfy) * amp;
-      maxAmp += amp;
-      amp *= 0.5;
-      freq *= 2;
-    }
-    return val / maxAmp;
-  }
-
-  function pseudoRand(x: number, y: number): number {
-    const n = Math.sin(x * 127.1 + y * 311.7 + seedX * 0.01) * 43758.5453;
-    return n - Math.floor(n);
-  }
+  const noise2D = createNoise2D(noiseScale, octaves, seedX, seedY);
 
   // Sample the field and draw contour lines
   const contourLevels = h.int(8, 18);
   const colors = [palette.primary, palette.secondary, palette.accent];
   const lineOpacity = h.float(0.15, 0.5);
-  const lineWidth = h.float(0.8, 2.5);
+  const lineWidth = +h.float(0.8, 2.5).toFixed(1);
   const fillContours = h.rand() > 0.4;
 
   // Resolution for marching
@@ -188,25 +155,26 @@ export function generateTopographic(
     }
   }
 
-  // Subtle dot grid overlay
+  // Subtle dot grid overlay via SVG pattern (avoids thousands of individual circles)
   if (h.rand() > 0.5) {
     const dotSpacing = h.int(16, 32);
     const dotColor = hslToString(palette.highlight, 0.06);
-    for (let y = dotSpacing; y < height; y += dotSpacing) {
-      for (let x = dotSpacing; x < width; x += dotSpacing) {
-        elements.push(`<circle cx="${x}" cy="${y}" r="0.8" fill="${dotColor}" />`);
-      }
-    }
+    defs.push(`
+      <pattern id="${prefix}tdots" width="${dotSpacing}" height="${dotSpacing}" patternUnits="userSpaceOnUse">
+        <circle cx="${dotSpacing / 2}" cy="${dotSpacing / 2}" r="0.8" fill="${dotColor}" />
+      </pattern>
+    `);
+    elements.push(`<rect width="${width}" height="${height}" fill="url(#${prefix}tdots)" />`);
   }
 
   // Grain
   defs.push(`
-    <filter id="tgrain">
+    <filter id="${prefix}tgrain">
       <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
     </filter>
   `);
-  elements.push(`<rect width="${width}" height="${height}" filter="url(#tgrain)" opacity="0.03" />`);
+  elements.push(`<rect width="${width}" height="${height}" filter="url(#${prefix}tgrain)" opacity="0.03" />`);
 
   return `<defs>${defs.join("")}</defs>${elements.join("")}`;
 }

@@ -58,7 +58,8 @@ export function generateAlbumCoverSVG(options: AlbumCoverOptions): string {
   const patternFn = PATTERN_FNS[resolvedVariant];
   // Re-hash so the pattern gets fresh randomness after the palette used some
   const patternHash = hashString(name + ":" + resolvedVariant);
-  const inner = patternFn(patternHash, palette, size);
+  const prefix = patternHash.seeds[0].toString(36).slice(0, 4);
+  const inner = patternFn(patternHash, palette, size, prefix);
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`,
