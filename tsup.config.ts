@@ -14,4 +14,13 @@ export default defineConfig([
     external: ["react"],
     treeshake: true,
   },
+  {
+    entry: { "bannergen.browser": "src/browser.ts" },
+    format: ["iife"],
+    globalName: "bannergen",
+    minify: true,
+    sourcemap: false,
+    dts: false,
+    clean: false,
+  },
 ]);

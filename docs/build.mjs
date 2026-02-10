@@ -1,6 +1,8 @@
 import { generateBannerSVG } from "../dist/index.mjs";
 import { generateAvatarSVG } from "../dist/index.mjs";
-import { writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
+
+const browserJS = readFileSync("dist/bannergen.browser.global.js", "utf-8");
 
 const names = ["Matthew Peters", "maia", "hello world", "bannergen", "soundlink", "aurora", "delta", "echo"];
 const bannerVariants = ["gradient", "geometric", "topographic", "aurora"];
@@ -27,6 +29,29 @@ let html = `<!DOCTYPE html>
 
   /* Install */
   .install { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 0.75rem 1.25rem; display: inline-block; font-family: "SF Mono", "Fira Code", monospace; font-size: 0.9rem; color: #4ade80; margin-bottom: 2rem; }
+
+  /* Try It */
+  .tryit { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; margin-bottom: 3rem; }
+  .tryit h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #222; }
+  .tryit-controls { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
+  .tryit-controls input[type="text"] {
+    flex: 1; min-width: 200px; padding: 0.6rem 0.9rem; border-radius: 6px;
+    border: 1px solid #333; background: #1a1a1a; color: #e0e0e0;
+    font-size: 1rem; font-family: inherit; outline: none;
+  }
+  .tryit-controls input[type="text"]:focus { border-color: #4ade80; }
+  .tryit-controls select {
+    padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #333;
+    background: #1a1a1a; color: #e0e0e0; font-size: 0.85rem; font-family: inherit; outline: none;
+  }
+  .tryit-controls label { font-size: 0.85rem; color: #888; display: flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+  .tryit-controls input[type="checkbox"] { accent-color: #4ade80; }
+  .tryit-banner { border-radius: 10px; overflow: hidden; margin-bottom: 1rem; border: 1px solid #222; }
+  .tryit-banner svg { width: 100%; height: auto; display: block; }
+  .tryit-avatars { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .tryit-avatar-item { text-align: center; }
+  .tryit-avatar-item svg { display: block; }
+  .tryit-avatar-item .label { font-size: 0.7rem; color: #555; margin-top: 0.3rem; }
 
   /* Sections */
   .section { margin-bottom: 3rem; }
@@ -63,6 +88,7 @@ let html = `<!DOCTYPE html>
   .footer { text-align: center; padding: 2rem 0; color: #444; font-size: 0.85rem; border-top: 1px solid #1a1a1a; margin-top: 2rem; }
 </style>
 </head><body>
+<script>${browserJS}</script>
 <div class="container">
 
 <div class="hero">
@@ -76,7 +102,66 @@ let html = `<!DOCTYPE html>
     <span class="badge">React / Next.js / Vanilla</span>
   </div>
   <div class="install">npm install github:appcat-io/bannergen</div>
-</div>`;
+</div>
+
+<div class="tryit">
+  <h2>Try It</h2>
+  <div class="tryit-controls">
+    <input type="text" id="tryit-name" placeholder="Type a name..." value="maia" />
+    <select id="tryit-banner-variant">
+      <option value="auto">Banner: auto</option>
+      <option value="gradient">gradient</option>
+      <option value="geometric">geometric</option>
+      <option value="topographic">topographic</option>
+      <option value="aurora">aurora</option>
+    </select>
+    <select id="tryit-avatar-variant">
+      <option value="auto">Avatar: auto</option>
+      <option value="pixelGrid">pixelGrid</option>
+      <option value="geometric">geometric</option>
+      <option value="rings">rings</option>
+    </select>
+    <label><input type="checkbox" id="tryit-rounded" /> Rounded</label>
+  </div>
+  <div class="tryit-banner" id="tryit-banner-preview"></div>
+  <div class="tryit-avatars" id="tryit-avatar-preview"></div>
+</div>
+
+<script>
+(function() {
+  var nameInput = document.getElementById("tryit-name");
+  var bannerVariant = document.getElementById("tryit-banner-variant");
+  var avatarVariant = document.getElementById("tryit-avatar-variant");
+  var roundedCheck = document.getElementById("tryit-rounded");
+  var bannerPreview = document.getElementById("tryit-banner-preview");
+  var avatarPreview = document.getElementById("tryit-avatar-preview");
+
+  function update() {
+    var name = nameInput.value || "default";
+    var bv = bannerVariant.value;
+    var av = avatarVariant.value;
+    var rounded = roundedCheck.checked;
+
+    bannerPreview.innerHTML = bannergen.generateBannerSVG({ name: name, width: 1500, height: 500, variant: bv });
+
+    var sizes = [96, 80, 64, 48, 32];
+    var html = "";
+    for (var i = 0; i < sizes.length; i++) {
+      var s = sizes[i];
+      var svg = bannergen.generateAvatarSVG({ name: name, size: s, variant: av, rounded: rounded });
+      var br = rounded ? "border-radius:50%;" : "border-radius:4px;";
+      html += '<div class="tryit-avatar-item"><div style="' + br + 'overflow:hidden;width:' + s + 'px;height:' + s + 'px;">' + svg + '</div><div class="label">' + s + 'px</div></div>';
+    }
+    avatarPreview.innerHTML = html;
+  }
+
+  nameInput.addEventListener("input", update);
+  bannerVariant.addEventListener("change", update);
+  avatarVariant.addEventListener("change", update);
+  roundedCheck.addEventListener("change", update);
+  update();
+})();
+</script>`;
 
 // Banner Gallery
 html += `<div class="section"><h2>Banner Gallery</h2>`;
