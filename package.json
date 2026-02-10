@@ -1,7 +1,7 @@
 {
   "name": "@appcat/bannergen",
   "version": "0.1.0",
-  "description": "Deterministic profile banners and identicon avatars from any string. Zero dependencies. Works with React, Next.js, Vite, Remix.",
+  "description": "Deterministic profile banners, identicon avatars, and album covers from any string. Zero dependencies. Works with React, Next.js, Vite, Remix.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -47,7 +47,11 @@
     "gradient",
     "geometric",
     "topographic",
-    "aurora"
+    "aurora",
+    "album-cover",
+    "album-art",
+    "cover-art",
+    "music"
   ],
   "author": "appcat-io",
   "license": "MIT",
