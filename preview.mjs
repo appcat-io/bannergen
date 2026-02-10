@@ -1,7 +1,7 @@
 import { generateBannerSVG } from "./dist/index.mjs";
 import { writeFileSync } from "fs";
 
-const names = ["Matthew Peters", "alice", "hello world", "bannergen", "OpenAI"];
+const names = ["hello world", "bannergen", "soundlink", "aurora", "delta", "echo"];
 const variants = ["gradient", "geometric", "topographic", "aurora"];
 
 let html = `<!DOCTYPE html>
